@@ -1,4 +1,5 @@
 # encoding=utf-8
+import numpy
 import gensim
 from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
@@ -19,10 +20,18 @@ def create_model():
 def model_usage():
     # 导入模型
     model = gensim.models.Word2Vec.load("/Users/zoe/Documents/remotefile2/text200.model")
-    print(model['锌'])
-    result = model.most_similar('高血压')
+    # print(model['锌'])
+    result = model.most_similar('高血压')  # 就是求了余弦
     for each in result:
         print(each[0], each[1])
+
+    A = model['高血压']
+    B = model['冠心病']
+    num = float(A.dot(B))  # 若为行向量则 A * B.T
+    denom = numpy.linalg.norm(A) * numpy.linalg.norm(B)
+    cos = num / denom  # 余弦值
+    print(cos)
+
     # model.most_similar(positive=['woman', 'king'], negative=['man'])
     # sim1 = model.similarity('贫血', '细胞')
     #  print(sim1)
