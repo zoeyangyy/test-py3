@@ -1,47 +1,50 @@
+# encoding='utf-8'
+
+import time
 import requests
+import json
 from bs4 import BeautifulSoup
 
-r = requests.get('')
-soup = BeautifulSoup(r.text)
+file = open('diabates.txt', 'a')
 
-table = soup.find(id="result_content").find_all('tr',limit=3)
+for i in range(21, 51):
+    r1 = requests.get('http://club.xywy.com/list_275_all_'+str(i)+'.htm')
+    soup = BeautifulSoup(r1.text, "html.parser")
 
-del(table[0])
-list1 = []
+    for tr in soup.table.find_all("tr"):
+        dic = {}
+        dic['depart'] = '内科'
+        dic['disease'] = '糖尿病'
+        a = tr.td.find_all("a")[1]
+        dic['url'] = a['href']
 
-for row in table:
-	dict1={}
-	dict1['index']=row.find_all('td')[0].text
-	dict1['bookname']=row.find_all('td')[1].a.text
-	dict1['author']=row.find_all('td')[2].text
-	dict1['publisher']=row.find_all('td')[3].text
-	dict1['booknumber']=row.find_all('td')[4].text
-	dict1['booktype']=row.find_all('td')[5].text
+        # 问答页面
+        r2 = requests.get(a['href'])
+        r2.encoding = 'gbk'
+        soup2 = BeautifulSoup(r2.text, "html.parser")
+        askcon = soup2.find("div", attrs={"class": "Userinfo"})
+        userinfo = askcon.find_all("span")
+        dic['patient'] = userinfo[0].text
+        print(dic['patient'])
+        dic['gender'] = userinfo[2].text.strip()
+        dic['age'] = userinfo[4].text
+        dic['time'] = userinfo[6].text
+        dic['ques'] = soup2.find(attrs={"class": "User_quecol"}).text.strip()
 
-	link=row.find_all('td')[1].a
-	subweb=requests.get('http://opaclibrary.sufe.edu.cn/opac/'+link['href'])
-	soup1=BeautifulSoup(subweb.text)
-	print(soup1.find(id="book_img"))
+        # 医生相关信息
+        if soup2.find(attrs={"class": "Doc_dochf"}):
+            doccon = soup2.find(attrs={'class': "docCon"})
+            doc_a = doccon.find_all('div', recursive=False)[1].a
+            dic['dt_name'] = doc_a.text
+            dic['dt_url'] = doc_a['href']
+            dic['answer'] = soup2.find(attrs={"class": "Doc_dochf"}).div.text
+        else:
+            dic['dt_name'] = ''
+            dic['dt_url'] = ''
+            dic['answer'] = ''
 
-	detail=soup1.find(id="item_detail").find_all('dl')
-	dict1['edition']=detail[1].dd.text
-	dict1['ISBN']=detail[3].dd.text
-	dict1['douban']=detail[17].dd.p.text
-	dict1['available_number']=len(soup1.find_all(attrs={"color":"green"}))
+        j = json.dumps(dic, ensure_ascii=False)
+        file.write(j+'\n')
+    print(time.strftime('%H:%M:%S', time.localtime(time.time())) +"   page "+ str(i) + " is ready")
 
-	storelist=soup1.find(id="item").find_all('tr')
-	del(storelist[0])
-	list_info=[]
-
-	for row_info in storelist:
-		dict_info={}
-		dict_info['booknumber']=row_info.find_all('td')[0].text
-		dict_info['barcode']=row_info.find_all('td')[1].text
-		dict_info['year']=row_info.find_all('td')[2].text
-		dict_info['place']=row_info.find_all('td')[3].text
-		list_info.append(dict_info)
-
-	dict1['storeinformation']=list_info
-	list1.append(dict1)
-	j=json.dumps(list1)
-	print(j)
+file.close()
