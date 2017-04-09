@@ -23,7 +23,7 @@ def model_usage():
     # print(model['锌'])
     result = model.most_similar('高血压')  # 就是求了余弦
     for each in result:
-        print(each[0], each[1])
+        print(each[0])
 
     A = model['高血压']
     B = model['冠心病']

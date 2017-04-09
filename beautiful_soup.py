@@ -5,24 +5,26 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-file = open('diabates.txt', 'a')
+file = open('cirrhosis.txt', 'a')
 
-for i in range(21, 51):
-    r1 = requests.get('http://club.xywy.com/list_275_all_'+str(i)+'.htm')
+for i in range(1, 201):
+    r1 = requests.get('http://club.xywy.com/list_701_all_'+str(i)+'.htm')
     soup = BeautifulSoup(r1.text, "html.parser")
 
     for tr in soup.table.find_all("tr"):
         dic = {}
         dic['depart'] = '内科'
-        dic['disease'] = '糖尿病'
+        dic['disease'] = '肝硬化'
         a = tr.td.find_all("a")[1]
         dic['url'] = a['href']
 
         # 问答页面
-        r2 = requests.get(a['href'])
+        r2 = requests.get(a['href'], timeout=60)
         r2.encoding = 'gbk'
         soup2 = BeautifulSoup(r2.text, "html.parser")
         askcon = soup2.find("div", attrs={"class": "Userinfo"})
+        if not askcon:
+            continue
         userinfo = askcon.find_all("span")
         dic['patient'] = userinfo[0].text
         print(dic['patient'])
