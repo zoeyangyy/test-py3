@@ -1,20 +1,21 @@
 # encoding='utf-8'
+# 修改: 1. 文件名 2. 网站 3. 病名
 
 import time
 import requests
 import json
 from bs4 import BeautifulSoup
 
-file = open('cirrhosis.txt', 'a')
+file = open('./data/nephritis.txt', 'a')
 
-for i in range(1, 201):
-    r1 = requests.get('http://club.xywy.com/list_701_all_'+str(i)+'.htm')
+for i in range(82, 201):
+    r1 = requests.get('http://club.xywy.com/list_746_all_'+str(i)+'.htm')
     soup = BeautifulSoup(r1.text, "html.parser")
 
     for tr in soup.table.find_all("tr"):
         dic = {}
         dic['depart'] = '内科'
-        dic['disease'] = '肝硬化'
+        dic['disease'] = '肾炎'
         a = tr.td.find_all("a")[1]
         dic['url'] = a['href']
 
