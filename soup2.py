@@ -3,10 +3,10 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-file = open('./data_date/0409.txt', 'a')
+file = open('./data_date/0403.txt', 'a')
 
-for i in range(600, 670):
-    r1 = requests.get('http://club.xywy.com/keshi/2017-04-09/' + str(i) + '.html')
+for i in range(1, 662):
+    r1 = requests.get('http://club.xywy.com/keshi/2017-04-03/' + str(i) + '.html')
     r1.encoding = 'gbk'
     soup = BeautifulSoup(r1.text, "html.parser")
     table = soup.find("div", attrs={"class": "DiCeng"})

@@ -4,10 +4,10 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 G = nx.Graph()
-li = ['冠心病', '心脏病', '高血脂', '糖尿病足', '肾病', '肝硬化', '头晕', '心慌', '白内障']
+li = ['冠心病', '心脏病', '高血脂', '糖尿病足', '肾病', '头晕', '心慌', '白内障']
 G.add_nodes_from(li)
 
-file = open('../data/jieba-cut.txt', 'r')
+file = open('../jieba-cut.txt', 'r')
 
 for j in file.readlines():
     ele = ['糖尿病']

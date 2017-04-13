@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 
 G = nx.Graph()
 li = ['冠心病', '心脏病', '高血脂', '糖尿病足', '肾病', '营养不良', '头晕', '心慌', '白内障']
-G.add_nodes_from(li)
+p = [100, 100, 200, 300, 100, 100, 300, 200, 200]
+G.add_nodes_from(li, size=200)
+G.add_node('糖尿病', size=200)
 
-
-file = open('../data/diabates.txt', 'r')
+file = open('../data/diabetes.txt', 'r')
 
 for j in file.readlines():
     dic = json.loads(j)
@@ -36,8 +37,25 @@ for j in file.readlines():
 
 file.close()
 
+exist = []
+pair = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] > 3]
+for one in pair:
+    if one[0] not in exist:
+        exist.append(one[0])
+    if one[1] not in exist:
+        exist.append(one[1])
+
+for ele in li:
+    if ele not in exist:
+        G.remove_node(ele)
+
+G.add_node("a")
+G.node["a"]['size'] = 800
+a = [s['size'] for (n, s) in G.nodes(data=True)]
+
+
 pos = nx.spring_layout(G)
-nx.draw_networkx_nodes(G, pos)
+nx.draw_networkx_nodes(G, pos, node_size=[s['size'] for (n, s) in G.nodes(data=True)])
 nx.draw_networkx_edges(G, pos, width=[float(d['weight']*0.2) for (u, v, d) in G.edges(data=True)])
 nx.draw_networkx_labels(G, pos)
 plt.axis('off')
