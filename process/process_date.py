@@ -5,7 +5,7 @@ import os
 import re
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import community
 
 # 总结类别
 def generate_type():
@@ -28,12 +28,33 @@ def generate_type():
 # 导入jieba词库，需要词频数据，暂时都写成1
 def generate_dic():
     f1 = open('../data_date/type.txt', 'r')
-    f2 = open('../data_date/dic.txt', 'w')
+    f2 = open('../data_date/症状.txt', 'r', encoding="gbk")
+    f3 = open('../data_date/疾病.txt', 'a+')
+
+    # f = open('../data_date/dic.txt', 'w')
+
+    li = []
+    # for line in f2.readlines():
+    #     if line.strip() not in li:
+    #         li.append(line.strip())
+    for line in f3.readlines():
+        if line.strip() not in li:
+            li.append(line.strip())
+
     for line in f1.readlines():
-        new = line.strip() + ' 1'
-        f2.write(new + '\n')
-    f1.close()
+        if line.strip() not in li:
+            f3.write(line)
+
+    # for ele in li:
+    #     f.write(ele + " 1"+'\n')
+    #
+    # f.close()
+
+
+
     f2.close()
+    f3.close()
+    f1.close()
 
 
 # 第一种画图方法
@@ -78,6 +99,7 @@ def create_graph():
     # - random_layout：节点随机分布
     # - shell_layout：节点在同心圆上分布
     # - spring_layout：用Fruchterman-Reingold算法排列节点
+    # - spectral_layout：根据图的拉普拉斯特征向量排列节
 
     exist = []
     pair = [(u, v) for (u, v, d) in G.edges(data=True) if d['weight'] > 3]
@@ -100,9 +122,73 @@ def create_graph():
     plt.show()
 
 
+# 从原文本提取疾病和症状
+def extract_dis():
+    f2 = open('../data_date/疾病.txt', 'r')
+    f2_sym = open('../data_date/症状.txt', 'r', encoding="gbk")
+
+    li = []
+    for line in f2.readlines():
+        li.append(line.strip())
+    f2.close()
+
+    li_sym = []
+    for line in f2_sym.readlines():
+        li_sym.append(line.strip())
+    f2_sym.close()
+
+    jieba.load_userdict('../data_date/dic.txt')
+
+    f3 = open('../data_date/simple.txt', 'w')
+    for files in os.walk('../data_date/'):
+        for i in files[2]:
+            if re.match('0', i):
+                f1 = open('../data_date/' + i, 'r')
+                for line in f1.readlines():
+                    dic = json.loads(line)
+                    ele = []
+                    ele_sym = []
+                    dic2 = {}
+                    for sen in jieba.cut(dic['disease'] + "," + dic['title'] + "," + dic['ques']):
+                        if (sen in li) and (sen not in ele):
+                            ele.append(sen)
+                        if (sen in li_sym) and (sen not in ele_sym):
+                            ele_sym.append(sen)
+                    if len(ele) > 1:
+                        dic2['dis'] = ele
+                        dic2['sym'] = ele_sym
+                        f3.write(json.dumps(dic2, ensure_ascii=False)+'\n')
+                f1.close()
+    f3.close()
+
+
+def create_data_2():
+    f = open('../data_date/simple.txt', 'r')
+
+    edges = {}
+    for line in f.readlines():
+        dic = json.loads(line)
+        ele = dic['dis']
+        if (ele[0], ele[1]) in edges:
+            edges[(ele[0], ele[1])] += 1
+        else:
+            edges[(ele[0], ele[1])] = 1
+
+    f.close()
+
+    f3 = open('../data_date/data_2.txt', 'w')
+    for (u, v) in edges:
+        f3.write(u + " " + v + " " + str(edges[(u, v)]) + "\n")
+
+    f3.close()
+
+# create_data_2()
+
+
 # 遍历文件，储存关系数据
 def create_data():
     jieba.load_userdict('../data_date/dic.txt')
+
     f2 = open('../data_date/type.txt', 'r')
     # 所有疾病列表
     li = []
@@ -138,9 +224,9 @@ def create_data():
     f3.close()
 
 
-# 第二种画图，性能更好
-def create_graph2():
-    f1 = open('../data_date/data.txt', 'r')
+# 第二种画图，性能更，用data.txt
+def create_graph_2():
+    f1 = open('../data_date/date_1.txt', 'r')
     edges = {}
     for line in f1.readlines():
         li = line.split()
@@ -155,7 +241,7 @@ def create_graph2():
     # - spring_layout：用Fruchterman-Reingold算法排列节点
 
     exist = []
-    pair = [(u, v, {"weight": edges[(u, v)]}) for (u, v) in edges if edges[(u, v)] > 3]
+    pair = [(u, v, {"weight": edges[(u, v)]}) for (u, v) in edges if edges[(u, v)] > 2]
     for one in pair:
         for i in range(0, 2):
             if one[i] not in exist:
@@ -173,13 +259,18 @@ def create_graph2():
                 size += edges[(neigh, node)]
         G.node[node]['size'] = size
 
+    part = community.best_partition(G)
+    color = [part.get(node) for node in G.nodes()]
+
+    # mod = community.modularity(part, G)
+    # print("modularity:", mod)
+
     pos = nx.spring_layout(G)
-    nx.draw_networkx_nodes(G, pos,  node_size=[s['size']*10 for (n, s) in G.nodes(data=True)])
+    nx.draw_networkx_nodes(G, pos, node_color=color,  node_size=[s['size']*10 for (n, s) in G.nodes(data=True)])
     nx.draw_networkx_edges(G, pos, width=[float(d['weight'] * 0.2) for (u, v, d) in G.edges(data=True)])
     nx.draw_networkx_labels(G, pos, font_size=8)
     # print(G.neighbors('头痛'))
     plt.axis('off')
     plt.show()
 
-
-create_graph2()
+create_graph_2()
