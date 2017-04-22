@@ -3,17 +3,17 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-file = open('./data_date/2017-03.txt', 'w')
-file_error = open('./data_date/error.txt', 'w')
+file = open('./data_date/2016-04.txt', 'a')
+file_error = open('./data_date/error4.txt', 'a')
 
-for date in range(1, 32):
+for date in range(3, 4):
     if date < 10:
         date = '0' + str(date)
     else:
         date = str(date)
-    for i in range(155, 501):
+    for i in range(242, 501):
         try:
-            r1 = requests.get('http://club.xywy.com/keshi/2017-03-' + date + '/' + str(i) + '.html')
+            r1 = requests.get('http://club.xywy.com/keshi/2016-04-' + date + '/' + str(i) + '.html')
             r1.encoding = 'gbk'
             soup = BeautifulSoup(r1.text, "html.parser")
             table = soup.find("div", attrs={"class": "DiCeng"})
@@ -22,7 +22,6 @@ for date in range(1, 32):
                 try:
                     dic = {}
                     # dic['disease'] = div.h4.var.a.text
-
                     # dic['ques'] = div.p.text
 
                     url = div.h4.em.a['href']
@@ -65,14 +64,14 @@ for date in range(1, 32):
 
                 except Exception as e:
                     print(e)
-                    file_error.write(time.strftime('%H:%M:%S', time.localtime(time.time())) + "  page" + str(i) + " " + str(e) + '\n')
+                    file_error.write(time.strftime('%H:%M:%S', time.localtime(time.time())) + " " + date + "  page " + str(i) + " " + str(e) + '\n')
                     continue
 
             print(time.strftime('%H:%M:%S', time.localtime(time.time())) + "   page " + str(i) + " is ready")
 
         except Exception as e:
             print(e)
-            file_error.write(time.strftime('%H:%M:%S', time.localtime(time.time())) + "   page " + str(i) + " " + str(e) + '\n')
+            file_error.write(time.strftime('%H:%M:%S', time.localtime(time.time())) + " date " + date + "   page " + str(i) + " " + str(e) + '\n')
             continue
 
 file_error.close()

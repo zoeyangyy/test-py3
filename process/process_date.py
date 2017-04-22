@@ -7,6 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import community
 
+
 # 总结类别
 def generate_type():
     f2 = open('../data_date/type.txt', 'w')
@@ -162,6 +163,7 @@ def extract_dis():
     f3.close()
 
 
+# create_data_2()
 def create_data_2():
     f = open('../data_date/simple.txt', 'r')
 
@@ -181,8 +183,6 @@ def create_data_2():
         f3.write(u + " " + v + " " + str(edges[(u, v)]) + "\n")
 
     f3.close()
-
-# create_data_2()
 
 
 # 遍历文件，储存关系数据
@@ -226,7 +226,7 @@ def create_data():
 
 # 第二种画图，性能更，用data.txt
 def create_graph_2():
-    f1 = open('../data_date/date_1.txt', 'r')
+    f1 = open('../data_date/data.txt', 'r')
     edges = {}
     for line in f1.readlines():
         li = line.split()
@@ -241,7 +241,8 @@ def create_graph_2():
     # - spring_layout：用Fruchterman-Reingold算法排列节点
 
     exist = []
-    pair = [(u, v, {"weight": edges[(u, v)]}) for (u, v) in edges if edges[(u, v)] > 2]
+
+    pair = [(u, v, {"weight": edges[(u, v)]}) for (u, v) in edges if edges[(u, v)] > 1]
     for one in pair:
         for i in range(0, 2):
             if one[i] not in exist:
@@ -260,7 +261,12 @@ def create_graph_2():
         G.node[node]['size'] = size
 
     part = community.best_partition(G)
-    color = [part.get(node) for node in G.nodes()]
+
+    # 有多少社群
+    # print(len(set(part.values())))
+
+    cname = ['#FF6600', '#FFCC33', '#009966', '#0099CC', '#FF6666', '#666699']
+    color = [cname[part.get(node) % 6] for node in G.nodes()]
 
     # mod = community.modularity(part, G)
     # print("modularity:", mod)
