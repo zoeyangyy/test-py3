@@ -6,12 +6,12 @@ from bs4 import BeautifulSoup
 file = open('./data_date/2016-04.txt', 'a')
 file_error = open('./data_date/error4.txt', 'a')
 
-for date in range(3, 4):
+for date in range(1, 31):
     if date < 10:
         date = '0' + str(date)
     else:
         date = str(date)
-    for i in range(242, 501):
+    for i in range(1, 501):
         try:
             r1 = requests.get('http://club.xywy.com/keshi/2016-04-' + date + '/' + str(i) + '.html')
             r1.encoding = 'gbk'
@@ -21,9 +21,6 @@ for date in range(3, 4):
             for div in table.find_all("div", attrs={"class": "club_dic"}, recursive=False):
                 try:
                     dic = {}
-                    # dic['disease'] = div.h4.var.a.text
-                    # dic['ques'] = div.p.text
-
                     url = div.h4.em.a['href']
 
                     # 问答页面
