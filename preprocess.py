@@ -103,15 +103,17 @@ def fenci():
 
     for files in os.walk('/Users/zoe/Documents/毕业论文/data/rawdata/'):
         for i in files[2]:
-            if re.match('2016', i):
+            if re.match('2016-04', i):
                 start = time.clock()
                 f = open('/Users/zoe/Documents/毕业论文/data/rawdata/'+i, 'r')
                 contents = f.readlines()
                 f.close()
 
-                f = open('/Users/zoe/Documents/毕业论文/data/simdata2/'+i, 'w')
+                # f = open('/Users/zoe/Documents/毕业论文/data/simdata2/'+i, 'w')
                 count = 0
                 for line in contents:
+                    if count > 10:
+                        break
                     dic = json.loads(line)
                     ele = []
                     words = set(jieba.cut(dic['ques']))
@@ -120,20 +122,21 @@ def fenci():
                             ele.append(sen)
 
                     if len(ele) > 1:
+                        print(dic['ques'])
                         dic_new = dict()
                         dic_new['depart'] = dic['depart']
                         dic_new['gender'] = dic['gender']
                         dic_new['age'] = dic['age']
                         dic_new['time'] = dic['time']
                         dic_new['dis'] = ele
-                        f.write(json.dumps(dic_new, ensure_ascii=False)+'\n')
+                        # f.write(json.dumps(dic_new, ensure_ascii=False)+'\n')
                         count += 1
 
-                f.close()
+                # f.close()
                 end = time.clock()
                 print(str(count)+' %f' % (end-start))
 
-# fenci()
+fenci()
 
 
 # 添加边
@@ -161,13 +164,13 @@ def create_data(attr):
                 f.close()
                 for line in contents:
                     dic = json.loads(line)
-                    # if dic['gender'] == '女':
                     try:
                         s = re.findall('\d+', dic['age'])[0]
                     except:
                         s = 0
                     finally:
-                        if 0 < int(s) <= 10:
+                        if 50 <= int(s) < 60:
+                            # if dic['gender'] == '女':
                             ele = dic['dis']
                             if len(ele) == 2:
                                 edges = add_edge(edges, ele[0], ele[1])
@@ -189,7 +192,14 @@ def create_data(attr):
         f3.write(u + " " + v + " " + str(edges[(u, v)]) + "\n")
     f3.close()
 
-create_data('age0-10')
+# create_data('total')
+# create_data('age0-10',0,10)
+# create_data('age10-19',10,20)
+# create_data('age20-29',20,30)
+# create_data('age30-39',30,40)
+# create_data('age50-59')
+# create_data('age50-59')
+# create_data('age60-',60,150)
 
 
 def modify_data(attr, number):
@@ -225,13 +235,32 @@ def modify_data(attr, number):
 # modify_data('summer', 53963)
 # modify_data('autumn', 68804)
 # modify_data('winter', 55165)
+# modify_data('female', 86588)
+# modify_data('male', 97876)
+
+def weiyan():
+    f1 = open('/Users/zoe/Documents/毕业论文/data/gephidata/total.txt', 'r')
+    edges = {}
+    min_edge = 50  # 提取权值在50以上的边
+    for line in f1.readlines():
+        li = line.split()
+        if float(li[2]) > min_edge and (li[0] == '胃炎' or li[1] == '胃炎'):
+            edges[(li[0], li[1])] = float(li[2])
+    f1.close()
+
+    f3 = open('/Users/zoe/Documents/毕业论文/data/gephidata/weiyan.txt', 'w')
+    for (u, v) in edges:
+        f3.write(u + " " + v + " " + str(edges[(u, v)]) + "\n")
+    f3.close()
+
+# weiyan()
 
 
 # 运用networkx生成复杂网络
 def create_graph_2(attr):
     f1 = open('/Users/zoe/Documents/毕业论文/data/gephidata/'+attr+'.txt', 'r')
     edges = {}
-    min_edge = 30   # 提取权值在50以上的边
+    min_edge = 50   # 提取权值在50以上的边
     for line in f1.readlines():
         li = line.split()
         if float(li[2]) > min_edge:
@@ -266,13 +295,13 @@ def create_graph_2(attr):
     nx.draw_networkx_labels(G, pos, font_size=8)
     nx.write_gexf(G, '/Users/zoe/Documents/毕业论文/data/gephidata/'+attr+'.gexf')
     plt.axis('off')
-    plt.show()
+    # plt.show()
 
-create_graph_2('age0-10')
+# create_graph_2('age0-10')
 # create_graph_2('age7-17')
 # create_graph_2('age41-65')
 # create_graph_2('age60-')
-#
+# create_graph_2('age50-59')
 # create_graph_2('female')
 # create_graph_2('male')
 #
@@ -282,4 +311,5 @@ create_graph_2('age0-10')
 # create_graph_2('winter')
 
 # create_graph_2('total')
-# create_graph_2('2017-new')
+# create_graph_2('weiyan')
+# create_graph_2('gengnianqi')

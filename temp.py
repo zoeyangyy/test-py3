@@ -2,9 +2,7 @@
 import os
 import re
 import json
-import time
-import networkx as nx
-import matplotlib.pyplot as plt
+import sys,getopt
 
 
 def count_len():
@@ -179,19 +177,3 @@ def chazhao():
 
     f.close()
 
-f = open('/Users/zoe/Documents/毕业论文/ICD-10疾病编码.txt', 'r')
-dis = set()
-for line in f.readlines():
-    dis.add(line.strip())
-f.close()
-
-i = 0
-f = open('./data_date/疾病.txt', 'r')
-for line in f.readlines():
-    if line.strip() in dis:
-        i += 1
-    else:
-        print(line.strip())
-
-print(i)
-f.close()
