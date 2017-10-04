@@ -3,6 +3,8 @@ import os
 import re
 import json
 import sys,getopt
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def count_len():
@@ -177,3 +179,11 @@ def chazhao():
 
     f.close()
 
+
+def draw():
+    x = np.arange(0.01,1,0.01)
+    y = -x*np.log2(x)
+    plt.plot(x,y)
+    plt.show()
+
+draw()
