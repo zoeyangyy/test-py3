@@ -16,7 +16,13 @@ import random
 
 
 def gender_features(word):
-    return {'last_letter': word[-1], 'suffix2': word[-2:]}
+    return {'last_letter': word[-1]}
+
+gender_features('Sherlock')
+
+
+def gender_features(word):
+    return {'last_letter': word[-1:], 'suffix2': word[-2:]}
 # other features
 # 'first_letter:': word[0], 'lens': len(word)
 
@@ -24,19 +30,20 @@ def gender_features(word):
 def test1():
     labeled_names = ([(name, 'male') for name in names.words('male.txt')]+
                      [(name, 'female') for name in names.words('female.txt')])
-
-    # print(labeled_names)
     random.shuffle(labeled_names)
+
     featuresets = [(gender_features(n), gender) for (n, gender) in labeled_names]
-    # print(len(featuresets))
+    # print(len(featuresets)) 7944
     train_set, test_set = featuresets[500:], featuresets[:500]
     classifier = nltk.NaiveBayesClassifier.train(train_set)
 
+    print(classifier.classify(gender_features('Neo')))
+    print(nltk.classify.accuracy(classifier, test_set))
+
+    print(classifier.show_most_informative_features(5))
     # train_set = apply_features(gender_features, labeled_names[500:])
 
-    # print(classifier.classify(gender_features('Neo')))
-    print(nltk.classify.accuracy(classifier, test_set))
-    print(classifier.show_most_informative_features(5))
+# test1()
 
 
 def test2():
@@ -61,8 +68,11 @@ def test2():
         if guess != tag:
             errors.append((tag, guess, name))
     for (tag, guess, name) in sorted(errors):
-        print('correct={:<8} guess={:<8s} name={:<30}'.format(tag, guess, name))
+        print('correct=%-8s guess={:<8s} name={:<30}'.format(tag, guess, name))
 
+# test2()
+
+# print('correct={:<8} guess={:<8} name={:<30}'.format('a', 'b', 'c'))
 
 def test3_movie():
     documents = [(list(movie_reviews.words(fileid)), category) for
@@ -72,6 +82,7 @@ def test3_movie():
 
     all_words = nltk.FreqDist(w.lower() for w in movie_reviews.words())
     word_features = list(all_words)[:2000]
+    print(word_features)
 
     def document_features(document):
         documents_words = set(document)
@@ -84,16 +95,22 @@ def test3_movie():
         return dict([word, True] for word in words)
 
     # print(document_features(movie_reviews.words('pos/cv957_8737.txt')))
+
     featuresets = [(document_features(d),c) for (d,c) in documents]
     train_set, test_set = featuresets[100:],featuresets[:100]
     classifier = nltk.NaiveBayesClassifier.train(train_set)
 
+    print(featuresets[0][1])
+    print(classifier.classify(featuresets[0][0]))
     print(nltk.classify.accuracy(classifier, test_set))
+
     print(classifier.show_most_informative_features(5))
 
 # test3_movie()
 
 def test4_brown():
+
+    from nltk.corpus import brown
     suffix_fdist = nltk.FreqDist()
     for word in brown.words():
         word = word.lower()
@@ -102,7 +119,7 @@ def test4_brown():
         suffix_fdist[word[-3:]] += 1
 
     common_suffixes = [suffix for (suffix, count) in suffix_fdist.most_common(100)]
-    print(common_suffixes)
+    # print(common_suffixes)
 
     def pos_features(word):
         features = {}
@@ -110,18 +127,51 @@ def test4_brown():
             features['endswith(%s)' % suffix] = word.lower().endswith(suffix)
         return features
 
-    tagged_words = brown.tagged_words(categories='news')
+    tagged_words = brown.tagged_words(categories='news')[:10000]
     featuresets = [(pos_features(n), g) for (n,g) in tagged_words]
-    print(featuresets[0])
+
     size = int(len(featuresets)*0.1)
-    train_set, test_set = featuresets[size:], featuresets[:size]
 
-    classifier = nltk.DecisionTreeClassifier.train(train_set)
-    print(nltk.classify.accuracy(classifier, test_set))
-    classifier.classify(pos_features('cats'))
-    print(classifier.pseudocode(depth=4))
+    train_set = featuresets[size*2:]
+    devtest_set = tagged_words[size:size*2]
+    test_set = featuresets[:size]
+
+    # classifier = nltk.DecisionTreeClassifier.train(train_set)
+    # print(nltk.classify.accuracy(classifier, test_set))
+    # print(classifier.pseudocode(depth=4))
+
+    # classifier.classify(pos_features('cats'))
+    # classifier.classify(pos_features(','))
+
     # 0.6270512182993535
+    # if endswith(the) == False:
+    #     if endswith(, ) == False:
+    #         if endswith(s) == False:
+    #             if endswith(.) == False: return '.'
+    #             if endswith(.) == True: return '.'
+    #         if endswith(s) == True:
+    #             if endswith( is) == False: return 'PP$'
+    #             if endswith( is) == True: return 'BEZ'
+    #     if endswith(, ) == True: return ','
+    # if endswith(the) == True: return 'AT'
 
+    classifier = nltk.NaiveBayesClassifier.train(train_set)
+
+    errors = []
+    for (n, tag) in devtest_set:
+        guess = classifier.classify(pos_features(n))
+        if guess != tag:
+            errors.append((tag, guess, n))
+
+    for (tag, guess, n) in sorted(errors):
+        print('correct={:<8s} guess={:<8s} n={:<30}'.format(tag, guess, n))
+
+    # print(nltk.classify.accuracy(classifier2, test_set))
+    # 0.5636001989060169
+
+# test4_brown()
+
+# print(len(brown.words()))
 
 def test5_brown():
     def pos_features(sentence, i):
@@ -135,18 +185,20 @@ def test5_brown():
         print(features)
         return features
 
-    pos_features(brown.sents()[0],8)
     tagged_sents = brown.tagged_sents(categories='news')
     featuresets = []
     for tagged_sent in tagged_sents:
         untagged_sent = nltk.tag.untag(tagged_sent)
         for i, (word, tag) in enumerate(tagged_sent):
             featuresets.append((pos_features(untagged_sent,i), tag))
+
     size = int(len(featuresets)*0.1)
     train_set, test_set = featuresets[size:], featuresets[:size]
-    classifier = nltk.NaiveBayesClassifier.train(train_set)
-    nltk.classify.accuracy(classifier, test_set)
 
+    classifier = nltk.NaiveBayesClassifier.train(train_set)
+    print(nltk.classify.accuracy(classifier, test_set))
+
+# test5_brown()
 
 def test6_brown():
     def pos_features(sentence, i, history):
@@ -188,4 +240,4 @@ def test6_brown():
     print(tagger.evaluate(test_sents))
     # 0.7980528511821975
 
-test6_brown()
+# test6_brown()

@@ -27,6 +27,9 @@ def test1_post():
     classifier = nltk.NaiveBayesClassifier.train(train_set)
     print(nltk.classify.accuracy(classifier, test_set))
 
+# posts = nltk.corpus.nps_chat.xml_posts()[:10000]
+# print(posts[0].get('class'))
+
 
 def test2_tre():
     def rte_features(rtepair):
@@ -44,7 +47,9 @@ def test2_tre():
     print(extractor.overlap('word'))
     print(extractor.overlap('ne'))
     print(extractor.hyp_extra('word'))
+    nltk.classify.rte_classifier(rtepair)
 
+test2_tre()
 
 def test3():
     def tag_list(tagged_sents):
@@ -67,4 +72,4 @@ def test4_entro():
 
     print(entropy(['1','2']))
 
-test4_entro()
+# test4_entro()

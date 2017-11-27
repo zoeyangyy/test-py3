@@ -35,140 +35,6 @@ def try_color():
     plt.axis('off')
     plt.show()
 
-
-def count_date():
-    f = open('/Users/zoe/Documents/毕业论文/data/rawdata/2016-04.txt', 'r')
-    contents = f.readlines()
-
-    all_count = 0
-    i1 = 0
-    i2 = 0
-    i3 = 0
-    i4 = 0
-    i5 = 0
-    i6 = 0
-    i7 = 0
-    i8 = 0
-    i9 = 0
-    i10 = 0
-    i11 = 0
-    i12 = 0
-    i13 = 0
-    i14 = 0
-    i15 = 0
-    i16 = 0
-    i17 = 0
-    i18 = 0
-    i19 = 0
-    i20 = 0
-    i21 = 0
-    i22 = 0
-    i23 = 0
-    i24 = 0
-    i25 = 0
-    i26 = 0
-    i27 = 0
-    i28 = 0
-    i29 = 0
-    i30 = 0
-    for line in contents:
-        all_count += 1
-        dic = json.loads(line)
-        time = dic['time'][0:10]
-        if time == '2016-04-01':
-            i1 += 1
-        if time == '2016-04-02':
-            i2 += 1
-        if time == '2016-04-03':
-            i3 += 1
-        if time == '2016-04-04':
-            i4 += 1
-        if time == '2016-04-05':
-            i5 += 1
-        if time == '2016-04-06':
-            i6 += 1
-        if time == '2016-04-07':
-            i7 += 1
-        if time == '2016-04-08':
-            i8 += 1
-        if time == '2016-04-09':
-            i9 += 1
-        if time == '2016-04-10':
-            i10 += 1
-        if time == '2016-04-11':
-            i11 += 1
-        if time == '2016-04-12':
-            i12 += 1
-        if time == '2016-04-13':
-            i13 += 1
-        if time == '2016-04-14':
-            i14 += 1
-        if time == '2016-04-15':
-            i15 += 1
-        if time == '2016-04-16':
-            i16 += 1
-        if time == '2016-04-17':
-            i17 += 1
-        if time == '2016-04-18':
-            i18 += 1
-        if time == '2016-04-19':
-            i19 += 1
-        if time == '2016-04-20':
-            i20 += 1
-        if time == '2016-04-21':
-            i21 += 1
-        if time == '2016-04-22':
-            i22 += 1
-        if time == '2016-04-23':
-            i23 += 1
-        if time == '2016-04-24':
-            i24 += 1
-        if time == '2016-04-25':
-            i25 += 1
-        if time == '2016-04-26':
-            i26 += 1
-        if time == '2016-04-27':
-            i27 += 1
-        if time == '2016-04-28':
-            i28 += 1
-        if time == '2016-04-29':
-            i29 += 1
-        if time == '2016-04-30':
-            i30 += 1
-
-    print(i1)
-    print(i2)
-    print(i3)
-    print(i4)
-    print(i5)
-    print(i6)
-    print(i7)
-    print(i8)
-    print(i9)
-    print(i10)
-    print(i11)
-    print(i12)
-    print(i13)
-    print(i14)
-    print(i15)
-    print(i16)
-    print(i17)
-    print(i18)
-    print(i19)
-    print(i20)
-    print(i21)
-    print(i22)
-    print(i23)
-    print(i24)
-    print(i25)
-    print(i26)
-    print(i27)
-    print(i28)
-    print(i29)
-    print(i30)
-    f.close()
-
-
 def chazhao():
     f = open('/Users/zoe/Documents/毕业论文/data/rawdata/2016-04.txt','r')
 
@@ -186,4 +52,54 @@ def draw():
     plt.plot(x,y)
     plt.show()
 
-draw()
+
+
+def cal_rho(phi1,phi2,k):
+    rho = list()
+    rho.append(phi1/(1-phi2))
+    rho.append((phi2*(1-phi2)+phi1*phi1)/(1-phi2))
+    for i in range(2,k-1):
+        rho.append(phi1*rho[i-1]+phi2*rho[i-2])
+    return rho
+
+# print(cal_rho(0.6,0.3,21))
+# for i in range(len(rho_list)):
+#     print(i,": ", rho_list[i])
+
+def cal_rho3(phi1,phi2,k):
+    rho = dict()
+    rho['rho0'] = phi1/(1-phi2)
+    rho['rho1'] = (phi2*(1-phi2)+phi1*phi1)/(1-phi2)
+    for i in range(2, k-1):
+        rho['rho'+str(i)] = phi1*rho['rho'+str(i-1)]+phi2*rho['rho'+str(i-2)]
+    return rho
+
+# rho_dict = cal_rho3(0.6,0.3,21)
+# print(rho_dict)
+
+
+def change_name():
+    for dir, dirnames, filenames in os.walk('test/'):
+        print(dir,dirnames,filenames)
+        for name in dirnames:
+            week = re.search('\d',name).group()
+            os.rename(dir+name,dir+'week'+week)
+
+# change_name()
+
+def decor(func):
+  def wrap():
+    print("============")
+    func()
+    print("============")
+  return wrap
+
+def print_text():
+  print("Hello world!")
+
+# decorated = decor(print_text)
+# decorated()
+
+s = '根据汇率超调模型可知汇率易变性是汇率在动态 调整过程中的一种短期行为。由此可知，汇率决定因素 主要有三种:一是长期汇率由购买力平价决定，即货币 的价值取决于所具有的购买能力， 汇率的决定因素是 物价水平而非其他因素。 二是即期汇率偏离长期均衡 汇率很大部分可以由两国利差解释， 在资本自由流动 的假设前提下，利差是决定即期汇率的关键因素。三是 预期在汇率形成过程中有非常重要的作用。 在汇率超 调模型中， 认为交易者对市场未来的预期将会准确反 映市场在未来所发生的实际变化， 即远期汇率水平应 该是未来即期汇率的有效无偏估计量， 理性预期具有 完全预见性。'
+
+print(''.join(s.split()))
