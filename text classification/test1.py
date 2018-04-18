@@ -18,13 +18,14 @@ import random
 def gender_features(word):
     return {'last_letter': word[-1]}
 
-gender_features('Sherlock')
+# gender_features('Sherlock')
 
 
 def gender_features(word):
     return {'last_letter': word[-1:], 'suffix2': word[-2:]}
 # other features
 # 'first_letter:': word[0], 'lens': len(word)
+
 
 
 def test1():
@@ -43,7 +44,35 @@ def test1():
     print(classifier.show_most_informative_features(5))
     # train_set = apply_features(gender_features, labeled_names[500:])
 
-# test1()
+test1()
+
+
+def price_features(item):
+    dic = dict()
+    for i in range(9):
+        dic[i] = float(item[i])
+    return dic
+
+
+with open('/Users/zoe/Desktop/二手房数据.csv','r') as inputfile:
+    content = inputfile.readlines()
+
+dataset = list()
+for item in content[1:]:
+    feature = item.strip().split(',')
+    price = int(int(feature[-1])/100000)
+    # print(price)
+    dataset.append((price_features(feature), price))
+
+train_set, test_set = dataset[500:], dataset[:500]
+classifier = nltk.NaiveBayesClassifier.train(train_set)
+
+print(nltk.classify.accuracy(classifier, test_set))
+print(classifier.show_most_informative_features(5))
+
+print(content[0], len(content))
+
+
 
 
 def test2():

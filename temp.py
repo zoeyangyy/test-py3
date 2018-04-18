@@ -5,6 +5,10 @@ import json
 import sys,getopt
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import *
+from functools import reduce
+import tensorflow as tf
+import time
 
 
 def count_len():
@@ -94,15 +98,61 @@ def decor(func):
     print("============")
   return wrap
 
-def print_text():
-  print("Hello world!")
 
-# decorated = decor(print_text)
-# decorated()
+def np_matmul():
+    x = np.array([1,2,3,4,5,6]).reshape([2,3])
+    y = np.array([1,2,3]).reshape([3,1])
+    z = np.array([1,2]).reshape([2,1])
 
-f = open('test.txt', 'r')
-a = f.read()
-f.close()
+    print(np.dot(x,y))
+    print(np.matmul(x,y))
 
-s = ''.join(a.split()).replace(',','，')
-print(s)
+    # z扩展成维度一样的
+    print(x*z)
+    print(np.multiply(x,z))
+
+
+class LR:
+    def __init__(self, dim):
+        self.dim = dim
+        # self.w = np.random.random(self.dim)
+        self.w = np.zeros(self.dim)
+        self.eta = 0.2
+
+    def sigmoid(self, x):
+        return 1.0/(1+np.exp(-x))
+
+    def logistic_regression(self,x,y,eta):
+        itr = 0
+        self.eta = eta
+        row, column = np.shape(x)
+
+        while itr <= 5000:
+            fx = np.dot(self.w, x.T)
+            hx = self.sigmoid(fx)
+            t = (hx-y)
+            s = []
+            for i in zip(t, x):
+                s.append([i[0] * i[1][j] for j in range(self.dim)])
+            gradient_w = np.sum(s, 0)/row * self.eta
+            self.w -= gradient_w
+
+            if itr % 500 == 0:
+                accuracy = len(list(filter(lambda x: abs(x) < 0.5, t)))/row
+                loss = -(np.dot(y, np.log(hx))+np.dot((1-y), np.log(1-hx)))/row
+                print("Iter: {}  Training Accuracy: {:.4}  Loss : {:.4}".format(itr, accuracy, loss))
+
+            # Break if gradient stop descenting
+            if reduce(lambda x, y: x & y, map(lambda x: abs(x) < 0.0001, gradient_w)):
+                break
+            itr += 1
+
+        return self.w
+
+a = np.linspace(1,10,10).reshape(10,1)
+b = np.linspace(50,59,10).reshape(10,1)
+c = (1.0*(b>3))
+# print(np.dot(a, b)*c.T)
+print(a)
+print(a+b)
+
