@@ -9,6 +9,8 @@ from numpy import *
 from functools import reduce
 import tensorflow as tf
 import time
+import collections
+import csv
 
 
 def count_len():
@@ -149,10 +151,38 @@ class LR:
 
         return self.w
 
-a = np.linspace(1,10,10).reshape(10,1)
-b = np.linspace(50,59,10).reshape(10,1)
-c = (1.0*(b>3))
-# print(np.dot(a, b)*c.T)
-print(a)
-print(a+b)
+def np_test():
+    a = np.linspace(1,10,10)
+    b = np.linspace(50,59,10)
+    c = (1.0*(b>3))
+    # print(np.dot(a, b)*c.T)
+    print(a)
+    print(a*b)
+    print(np.dot(a,b))
 
+    zip_list = list(zip([2,6,4], [5,1,3]))
+    print(zip_list)
+    zip_sorted = sorted(zip_list, key=lambda x: x[0])
+    print(zip_sorted)
+    x_data, y_data = zip(*zip_sorted)
+
+    print(x_data,y_data)
+
+def counter():
+    all_words = ["a","a","b","c"]
+    counter = collections.Counter(all_words)  # 统计词和词频。
+    count_pairs = sorted(counter.items(), key=lambda x: x[1])  # 排序
+    print(count_pairs)
+
+x = np.arange(9)
+y = np.sin(x)
+
+fig = plt.figure()
+plt.subplots_adjust(left=2, bottom=2, right=8, top=8,hspace=5, wspace=0) #调整子图间距
+for IMAGE in range(60):
+    ax = fig.add_subplot(10, 6, IMAGE+1)
+    ax.plot(x, y)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+plt.savefig('image-result.png', bbox_inches='tight')

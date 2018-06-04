@@ -24,14 +24,14 @@ import tensorflow as tf
 import numpy as np
 from numpy import *
 import matplotlib.pyplot as plt
+import pickle
 
 
-def approximate_relu():
+def approximate_relu(layer, hidden):
     x_Number = 100
-    hidden_Size = 100
+    hidden_Size = hidden
     learning_rate = 0.1
     training_iters = 50000
-    random.seed(5)
 
     #构造输入数据
     x_data = np.linspace(0.0, 1.0, num=x_Number).astype('float32').reshape([x_Number, 1])
@@ -41,27 +41,31 @@ def approximate_relu():
     # y_data = 3*x_data+1
 
     #隐层
-    W1 = tf.Variable(tf.random_uniform((1, hidden_Size), minval=-sqrt(6/(1+hidden_Size)), maxval=sqrt(6/(1+hidden_Size))))
-    # W1 = tf.get_variable(name="weights1", shape=[1, hidden_Size], initializer=tf.contrib.layers.xavier_initializer())
-    b1 = tf.get_variable(name='biases1', shape=[hidden_Size], initializer=tf.zeros_initializer())
-    Wx_plus_b1 = tf.matmul(x_data, W1) + b1  #矩阵x和W1相乘，然后加上偏置b1
-    output1 = tf.nn.relu(Wx_plus_b1) #激活函数使用tf.nn.relu
-
-    W2 = tf.get_variable(name="weights2", shape=[hidden_Size, hidden_Size], initializer=tf.contrib.layers.xavier_initializer())
-    b2 = tf.get_variable(name='biases2', shape=[hidden_Size], initializer=tf.zeros_initializer())
-    Wx_plus_b2 = tf.matmul(output1, W2) + b2  # 矩阵output1和W2相乘，然后加上偏置b2
-    output2 = tf.nn.relu(Wx_plus_b2)  # 激活函数使用tf.nn.relu
-
-    #输出层
-    W3 = tf.get_variable(name="weights3", shape=[hidden_Size, 1], initializer=tf.contrib.layers.xavier_initializer())
-    b3 = tf.get_variable(name='biases3', shape=[1], initializer=tf.zeros_initializer())
-    Wx_plus_b3 = tf.matmul(output2, W3)+b3
-    output3 = Wx_plus_b3
+    # W1 = tf.Variable(tf.random_uniform((1, hidden_Size), minval=-sqrt(6/(1+hidden_Size)), maxval=sqrt(6/(1+hidden_Size))))
+    # # W1 = tf.get_variable(name="weights1", shape=[1, hidden_Size], initializer=tf.contrib.layers.xavier_initializer())
+    # b1 = tf.get_variable(name='biases1', shape=[hidden_Size], initializer=tf.zeros_initializer())
+    # Wx_plus_b1 = tf.matmul(x_data, W1) + b1  #矩阵x和W1相乘，然后加上偏置b1
+    # output1 = tf.nn.relu(Wx_plus_b1) #激活函数使用tf.nn.relu
+    #
+    # W2 = tf.get_variable(name="weights2", shape=[hidden_Size, hidden_Size], initializer=tf.contrib.layers.xavier_initializer())
+    # b2 = tf.get_variable(name='biases2', shape=[hidden_Size], initializer=tf.zeros_initializer())
+    # Wx_plus_b2 = tf.matmul(output1, W2) + b2  # 矩阵output1和W2相乘，然后加上偏置b2
+    # output2 = tf.nn.relu(Wx_plus_b2)  # 激活函数使用tf.nn.relu
+    #
+    # #输出层
+    # W3 = tf.get_variable(name="weights3", shape=[hidden_Size, 1], initializer=tf.contrib.layers.xavier_initializer())
+    # b3 = tf.get_variable(name='biases3', shape=[1], initializer=tf.zeros_initializer())
+    # Wx_plus_b3 = tf.matmul(output2, W3)+b3
+    # output3 = Wx_plus_b3
 
     # 用内置fully_connected方法
-    # output1 = tf.contrib.layers.fully_connected(x_data, 100, activation_fn=tf.nn.relu)
-    # output2 = tf.contrib.layers.fully_connected(output1, 100, activation_fn=tf.nn.relu)
-    # output3 = tf.contrib.layers.fully_connected(output2, 1, activation_fn=None)
+    if layer==1:
+        output1 = tf.contrib.layers.fully_connected(x_data, hidden_Size, activation_fn=tf.nn.relu)
+        output3 = tf.contrib.layers.fully_connected(output1, 1, activation_fn=None)
+    if layer==2:
+        output1 = tf.contrib.layers.fully_connected(x_data, hidden_Size, activation_fn=tf.nn.relu)
+        output2 = tf.contrib.layers.fully_connected(output1, hidden_Size, activation_fn=tf.nn.relu)
+        output3 = tf.contrib.layers.fully_connected(output2, 1, activation_fn=None)
 
     #损失
     loss = tf.reduce_mean(tf.reduce_sum(tf.square(y_data-output3), reduction_indices=[1])) #在第一维上，偏差平方后求和，再求平均值，来计算损失
@@ -81,16 +85,50 @@ def approximate_relu():
                 print("step={} loss={}".format(i, s))
                 y_pred = sess.run(output3)
 
-        fig = plt.figure()
-        ax = fig.add_subplot(211)
-        ax.set_ylim(0, 1)
-        ax.plot(loss_all, 'red', label='loss')
-        bx = fig.add_subplot(212)
-        bx.plot(y_data, 'blue', label='data')
-        bx.plot(y_pred, 'green', label='pred')
-        plt.xlabel('step')
-        plt.show()
+    return y_data, y_pred, loss_all
 
 
 if __name__ == '__main__':
-    approximate_relu()
+    # y_data, y_pred1, loss_all1 = approximate_relu(2, 5)
+    # y_data, y_pred2, loss_all2 = approximate_relu(2, 10)
+    # y_data, y_pred3, loss_all3 = approximate_relu(2, 100)
+    # y_data, y_pred4, loss_all4 = approximate_relu(2, 1000)
+    #
+    # with open('pickle.data', 'wb') as file:
+    #     pickle.dump(y_data, file)
+    #     pickle.dump(y_pred1, file)
+    #     pickle.dump(loss_all1, file)
+    #     pickle.dump(y_pred2, file)
+    #     pickle.dump(loss_all2, file)
+    #     pickle.dump(y_pred3, file)
+    #     pickle.dump(loss_all3, file)
+    #     pickle.dump(y_pred4, file)
+    #     pickle.dump(loss_all4, file)
+
+    with open('pickle.data', 'rb') as file:
+        y_data = pickle.load(file)
+        y_pred1 = pickle.load(file)
+        loss_all1 = pickle.load(file)
+        y_pred2 = pickle.load(file)
+        loss_all2 = pickle.load(file)
+        y_pred3 = pickle.load(file)
+        loss_all3 = pickle.load(file)
+        y_pred4 = pickle.load(file)
+        loss_all4 = pickle.load(file)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(211)
+    ax.plot(loss_all1, '#FF8C00', label='loss_5_neuron')
+    ax.plot(loss_all2, '#FFBB00', label='loss_10_neuron')
+    ax.plot(loss_all3, '#FF3D00', label='loss_100_neuron')
+    ax.plot(loss_all4, '#0969A2', label='loss_1000_neuron')
+    ax.legend()
+    bx = fig.add_subplot(212)
+    bx.plot(y_data, 'black', label='actual')
+    bx.plot(y_pred1, '#FF8C00', label='pred_5_neuron')
+    bx.plot(y_pred2, '#FFBB00', label='pred_10_neuron')
+    bx.plot(y_pred3, '#FF3D00', label='pred_100_neuron')
+    bx.plot(y_pred4, '#0969A2', label='pred_1000_neuron')
+    bx.legend()
+    plt.xlabel('Function = 0.2+0.4*x**2+0.3*x*sin(15x)+0.05*cos(50x)')
+    plt.show()
